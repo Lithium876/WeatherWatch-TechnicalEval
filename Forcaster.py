@@ -58,50 +58,56 @@ class WeatherForcast:
 				self.update(1)
 		except Exception as err:
 			#Print out err if any
-			print(err)
+			print("Get Forcast Error: "+str(err))
 
 	@classmethod
 	def getdata(self, link):
-		data = []
-		#Goes to link
-		url = requests.get(link)
-		#Gets the page source of the url
-		html = BeautifulSoup(url.content,"html.parser")
-		#Get the rows from the table
-		odd=html.find_all("tr",{"class":"odd"})
-		even=html.find_all("tr",{"class":"even"})
+		try:
+			data = []
+			#Goes to link
+			url = requests.get(link)
+			#Gets the page source of the url
+			html = BeautifulSoup(url.content,"html.parser")
+			#Get the rows from the table
+			odd=html.find_all("tr",{"class":"odd"})
+			even=html.find_all("tr",{"class":"even"})
 
-		for i in odd:
-			n = i.text.split(' ')
-			data.append(n[0])
-		for i in even:
-			n = i.text.split(' ')
-			data.append(n[0])
-		
-		#Get length of the rows and determine if its a even table or odd table
-		if len(data) % 2 == 0:
-			Table = even
-			self.update(1)
-		elif len(data) % 2 == 1:
-			Table = odd
+			for i in odd:
+				n = i.text.split(' ')
+				data.append(n[0])
+			for i in even:
+				n = i.text.split(' ')
+				data.append(n[0])
+			
+			#Get length of the rows and determine if its a even table or odd table
+			if len(data) % 2 == 0:
+				Table = odd
+				self.update(1)
+			elif len(data) % 2 == 1:
+				Table = even
 
-		return Table
+			return Table
+		except Exception as err:
+			print("Get Data Error: "+str(err))
 
 	#Display forcast for a particular city 	
 	def displayForcast(self):
-		#Get the city forcast from the database
-		forcast = self.db.getForcast(self.city)
-		#Create a table display instant of the Texttable class
-		text_table = Texttable()
-		for day in forcast:
-			#Convert the windspeed from knots to Text
-			wind = WeatherForcast.windSpeedToText(day[4].split('m/s')[0])
-			#Convert the rain rate from meters per second to text
-			rain = WeatherForcast.rainRateToText(day[2])
-		#Display data from database in a tabular format
-			text_table.add_rows([['DayTime', 'Temperature', 'Rainfall', 'Pressure', 'Wind Speed', 'Wind Direction'], [day[0], day[1],  str(rain), day[3], str(wind), day[5]]])
-		print("=========================== Forcast For " + self.city + " ===========================")
-		print(text_table.draw()+'\n')
+		try:
+			#Get the city forcast from the database
+			forcast = self.db.getForcast(self.city)
+			#Create a table display instant of the Texttable class
+			text_table = Texttable()
+			for day in forcast:
+				#Convert the windspeed from knots to Text
+				wind = WeatherForcast.windSpeedToText(day[4].split('m/s')[0])
+				#Convert the rain rate from meters per second to text
+				rain = WeatherForcast.rainRateToText(day[2])
+			#Display data from database in a tabular format
+				text_table.add_rows([['DayTime', 'Temperature', 'Rainfall', 'Pressure', 'Wind Speed', 'Wind Direction'], [day[0], day[1],  str(rain), day[3], str(wind), day[5]]])
+			print("=========================== Forcast For " + self.city + " ===========================")
+			print(text_table.draw()+'\n')
+		except Exception as err:
+			print("Display Forcast Error: "+ str(err))
 
 	#Checks if it will rain today in a particular city
 	def willHaveRainToday(self):
@@ -188,8 +194,7 @@ class WeatherForcast:
 				#Close the server connection
 				smtpserver.close()
 		except Exception as err:
-			print(err)
-			print("Error in sending Emails")
+			print("Sending Email Error: "+str(err))
 
 	#Convert wind speed from knots and to text value
 	@staticmethod
