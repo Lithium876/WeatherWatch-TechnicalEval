@@ -1,6 +1,8 @@
 from Database import *
-import smtplib, os
+import smtplib, os, re
 from texttable import Texttable
+from selenium import webdriver
+
 
 class WeatherForcast:
 
@@ -10,6 +12,7 @@ class WeatherForcast:
 	#Class Contructure
 	def __init__(self, city):
 		self.city = city
+		WeatherForcast.DayCount=0
 		self.db = Database("Database.sqlite")
 
 	#Class Destructure
@@ -45,7 +48,7 @@ class WeatherForcast:
 			
 			for days in Table:
 				#Parsing data from link
-				days = days.text.split(' ')
+				days = days.split(' ')
 				DayTime = days[0]+' '+days[1]+' PM'
 				Temp = days[3].split("\xa0")[0]+"°C"
 				Rainfall = days[3].split("C")[1]
@@ -62,32 +65,43 @@ class WeatherForcast:
 
 	@classmethod
 	def getdata(self, link):
+		forecast = []
+		raw_data = []
+		passed = 0
+		x=0
+		y=6
 		try:
-			data = []
-			#Goes to link
+			#Get the data from the link
 			url = requests.get(link)
 			#Gets the page source of the url
 			html = BeautifulSoup(url.content,"html.parser")
 			#Get the rows from the table
-			odd=html.find_all("tr",{"class":"odd"})
-			even=html.find_all("tr",{"class":"even"})
+			Table=html.find_all("td",{"":""})
+			#Parsing the data from the source
+			for i in Table:
+				if passed == 0:
+					if len(i.text.split()) == 3 and i.text.split()[2] == 'pm':
+						raw_data.append(i.text)
+						passed += 6
+				else:
+					raw_data.append(i.text)
+					passed -=1
 
-			for i in odd:
-				n = i.text.split(' ')
-				data.append(n[0])
-			for i in even:
-				n = i.text.split(' ')
-				data.append(n[0])
-			
-			#Get length of the rows and determine if its a even table or odd table
-			if len(data) % 2 == 0:
-				Table = odd
+			#Formatting the parsed data
+			for n in range(0,5):
+				parsed_str = ''.join(map(str,raw_data[x:y]))
+				if len(parsed_str) == 0:
+					pass
+				else:
+					forecast.append(parsed_str)
+				x+=7
+				y+=7
+
+			if len(forecast)<5:
 				self.update(1)
-			elif len(data) % 2 == 1:
-				Table = even
 
-			return Table
-		except Exception as err:
+			return forecast
+		except Exception as err: 
 			print("Get Data Error: "+str(err))
 
 	#Display forcast for a particular city 	
@@ -111,24 +125,31 @@ class WeatherForcast:
 
 	#Checks if it will rain today in a particular city
 	def willHaveRainToday(self):
-		#Get the rain rate values from the database
-		rainval = self.db.getTodayRainValue(self.city)
-		#Check if the value recieved is greater than 0.0
-		if float(rainval) > 0.0:
-			#If the rain rate value is greater than 0.0 
-			#It means it will rain today so return ture
-			return True
-		else:
-			#Else it will not rain so return false
-			return False
+		try:
+			#Get the rain rate values from the database
+			rainval = self.db.getTodayRainValue(self.city)
+			#Check if the value recieved is greater than 0.0
+			if float(rainval) > 0.0:
+				#If the rain rate value is greater than 0.0 
+				#It means it will rain today so return ture
+				return True
+			else:
+				#Else it will not rain so return false
+				return False
+		except Exception as err:
+			print("Will have rain today Error: "+str(err))
 
 	#Checks if it will rain tomorrow in a particular city
 	def willHaveRainTomorrow(self):
-		rainval = self.db.getTomorrowRainValue(self.city)
-		if float(rainval) > 0.0:
-			return True
-		else:
-			return False
+		try:
+			rainval = self.db.getTomorrowRainValue(self.city)
+			if float(rainval) > 0.0:
+				return True
+			else:
+				return False
+		except Exception as err:
+			print("Will have rain tomorrow Error: "+str(err))
+			
 
 	#Send email to employees of a particular city
 	def sendEmail(self, emailtitle, willrain=None, role=None):
@@ -172,7 +193,7 @@ class WeatherForcast:
 
 				print("\n\nSending Email...")
 				#Sender email address
-				gmail_user = 'lomarlilly0712@gmail.com'
+				gmail_user = 'lomarlilly0712@gmail.com' 
 				#Sender password address
 				gmail_pwd = 'p@$$w0rd'
 				#Send the email via our own SMTP server.
@@ -199,46 +220,52 @@ class WeatherForcast:
 	#Convert wind speed from knots and to text value
 	@staticmethod
 	def windSpeedToText(kts):
-		knots = str(kts).split('kts')[0]
-		knots = int(knots)
-		if knots >= 1 and knots <= 3:
-			return "Light Air"
-		elif knots >= 4 and knots <= 6:
-			return "Light Breeze"
-		elif knots >= 7 and knots <= 10:
-			return "Gentle Breeze"
-		elif knots >= 11 and knots <= 16:
-			return "Moderate Breeze"
-		elif knots >= 17 and knots <= 21:
-			return "Fresh Breeze"
-		elif knots >= 22 and knots <= 27:
-			return "Strong Breeze"
-		elif knots >= 28 and knots <= 33:
-			return "Near Gale"
-		elif knots >= 34 and knots <= 40:
-			return "Gale"
-		elif knots >= 48 and knots <= 55:
-			return "Storm"
-		elif knots >= 56 and knots <= 63:
-			return "Violent Storm"
-		elif knots >= 56 and knots <= 63:
-			return "Hurricane"
+		try:
+			knots = str(kts).split('kts')[0]
+			knots = int(knots)
+			if knots >= 1 and knots <= 3:
+				return "Light Air"
+			elif knots >= 4 and knots <= 6:
+				return "Light Breeze"
+			elif knots >= 7 and knots <= 10:
+				return "Gentle Breeze"
+			elif knots >= 11 and knots <= 16:
+				return "Moderate Breeze"
+			elif knots >= 17 and knots <= 21:
+				return "Fresh Breeze"
+			elif knots >= 22 and knots <= 27:
+				return "Strong Breeze"
+			elif knots >= 28 and knots <= 33:
+				return "Near Gale"
+			elif knots >= 34 and knots <= 40:
+				return "Gale"
+			elif knots >= 48 and knots <= 55:
+				return "Storm"
+			elif knots >= 56 and knots <= 63:
+				return "Violent Storm"
+			elif knots >= 56 and knots <= 63:
+				return "Hurricane"
+		except Exception as err:
+			print("Wind Speed to text Error: "+str(err))
 
 	#Convert rain rates from metre per second to text value
 	@staticmethod
 	def rainRateToText(rainRate):
-		rainRate = float(rainRate)
-		if rainRate == 0.0:
-			return "No Rain"
-		elif rainRate > 0.0 and rainRate <= 0.2:
-			return "Very Light Rain"
-		elif rainRate > 0.2 and rainRate <= 1:
-			return "Light Rain"
-		elif rainRate > 1 and rainRate <= 4:
-			return "Moderate Rain"
-		elif rainRate > 4 and rainRate <= 16:
-			return "Heavy Rain"
-		elif rainRate > 16 and rainRate <= 50:
-			return "Very Heavy Rain"
-		elif rainRate > 50:
-			return "Extreme Rain"
+		try:
+			rainRate = float(rainRate)
+			if rainRate == 0.0:
+				return "No Rain"
+			elif rainRate > 0.0 and rainRate <= 0.2:
+				return "Very Light Rain"
+			elif rainRate > 0.2 and rainRate <= 1:
+				return "Light Rain"
+			elif rainRate > 1 and rainRate <= 4:
+				return "Moderate Rain"
+			elif rainRate > 4 and rainRate <= 16:
+				return "Heavy Rain"
+			elif rainRate > 16 and rainRate <= 50:
+				return "Very Heavy Rain"
+			elif rainRate > 50:
+				return "Extreme Rain"
+		except Exception as err:
+			print("Rain rate to text: "+str(err))
