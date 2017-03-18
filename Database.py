@@ -1,105 +1,271 @@
-import sqlite3
-import datetime
-import requests
-from bs4 import BeautifulSoup
+from Database import *
+import smtplib, os, re
+from texttable import Texttable
+from selenium import webdriver
 
-class Database:
+
+class WeatherForcast:
+
+	#Class Variable
+	DayCount = 0
 
 	#Class Contructure
-	def __init__(self, database_name):
-		self.today = datetime.date.today()
-		self.database_name = database_name
-		self.connection = sqlite3.connect(database_name)
-		self.cursor = self.connection.cursor()
+	def __init__(self, city):
+		self.city = city
+		WeatherForcast.DayCount=0
+		self.db = Database("Database.sqlite")
 
-	#Insert forcast data into the the database
-	def dataEntry(self, DayTime, Temp, Rainfall, Humidity, WindSpeed, WindDirection, city, nextday):
-	    try:
-	    	if(nextday == 0):
-	    		nextday = self.today
-	    	else:
-	    		nextday = datetime.datetime.now() + datetime.timedelta(days=nextday)
-	    	self.cursor.execute("INSERT INTO WeatherInfo (DateAdded, Date, DayTime, Temp, Rainfall, Humidity, WindSpeed, WindDirection, City) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)", (self.today, str(nextday).split(' ')[0], DayTime, Temp, Rainfall, Humidity, WindSpeed, WindDirection, city))
-	    	self.connection.commit()
-	    except Exception as error:
-	    	print("Data Entry Error: "+str(error))
+	#Class Destructure
+	def __del__(self):
+		self.db.closeDatabase()
 
-	#Select all rows the database and return its contents
-	def getForcast(self, city):
+	#Update Class Variable
+	@classmethod
+	def update(WeatherForcast, value):
+	    WeatherForcast.DayCount += value
+
+	#Gets Weather Forcast For a City
+	def getForcast(self):
 		try:
-			self.cursor.execute('SELECT DayTime, Temp, Rainfall, Humidity, WindSpeed, WindDirection FROM WeatherInfo WHERE DateAdded = ? AND City = ?',(self.today, city, ))
-			data = self.cursor.fetchall()
-			return data
-		except Exception as err:
-			print("Database Forcast Error: "+str(err))
+			#If City is Kingston
+			if self.city == "Kingston":
+				#Where to go to get forcast
+				link = "http://jamaica.weatherproof.fi/glenroy/weather/jaweather.php?place=Kingston"
+			#If City is Montego Bay
+			elif self.city == "Montego Bay":
+				link = "http://jamaica.weatherproof.fi/glenroy/weather/jaweather.php?place=Montego+Bay"
+			else:
+				#If City is not Kingston or Montego Bay raies an exception error
+				raise Exception("Invalid City!")
 
-	#Checks if rows are in the database and return how much rows exists
-	def dataExist(self, city):
-		try:
-			self.cursor.execute('SELECT City FROM WeatherInfo WHERE DateAdded = ? AND City = ?',(self.today, city, ))
-			data = self.cursor.fetchall()
-			return len(data)
-		except Exception as err:
-			print("Data Check if Exist Error: "+str(err))
+			#If the database has data
+			if(self.db.dataExist(self.city) > 0):
+				#Remove all data related to a particular city
+				self.db.clearDatabase(self.city)
 
-	#Returns tomorrow's weather conditions
-	def getTomorrowRainValue(self, city):
-		try:
-			tomorrow = datetime.datetime.now() + datetime.timedelta(days=1)
-			self.cursor.execute('SELECT Rainfall FROM WeatherInfo WHERE City = ? and Date = ?',(city, str(tomorrow).split(' ')[0]))
-			result = self.cursor.fetchone()
-			return result[0]
+			#Get foracast details from link
+			Table = WeatherForcast.getdata(link)
+			
+			for days in Table:
+				#Parsing data from link
+				days = days.split(' ')
+				DayTime = days[0]+' '+days[1]+' PM'
+				Temp = days[3].split("\xa0")[0]+"°C"
+				Rainfall = days[3].split("C")[1]
+				Pressure = days[4].split("mm")[1]+"mb"
+				WindSpeed = days[6]+"kts"
+				WindDirection = days[7].split("kts")[1]
+				#Add the parsed data to the database
+				self.db.dataEntry(DayTime, Temp, Rainfall, Pressure, WindSpeed, WindDirection, self.city, self.DayCount)
+				#Updates the class variable
+				self.update(1)
 		except Exception as err:
-			print("Get Tomorrow Rain Value Error: "+str(err))
+			#Print out err if any
+			print("Get Forcast Error: "+str(err))
 
-	#Returns today's weather conditions
-	def getTodayRainValue(self, city):
+	@classmethod
+	def getdata(self, link):
+		forecast = []
+		raw_data = []
+		passed = 0
+		x=0
+		y=6
 		try:
-			self.cursor.execute('SELECT Rainfall FROM WeatherInfo WHERE City = ? and Date = ?',(city, self.today))
-			result = self.cursor.fetchone()
-			return result[0]
-		except Exception as err:
-			print("Get Today Rain Value Error: "+str(err))
+			#Get the data from the link
+			url = requests.get(link)
+			#Gets the page source of the url
+			html = BeautifulSoup(url.content,"html.parser")
+			#Get the rows from the table
+			Table=html.find_all("td",{"":""})
+			#Parsing the data from the source
+			for i in Table:
+				if passed == 0:
+					if len(i.text.split()) == 3 and i.text.split()[2] == 'pm':
+						raw_data.append(i.text)
+						passed += 6
+				else:
+					raw_data.append(i.text)
+					passed -=1
 
-	#Delete data from the database where the is city is one specified 
-	def clearDatabase(self, city):
-		try:
-			old_db = Database("Database.sqlite")
-			self.cursor.execute('DELETE FROM WeatherInfo WHERE City = ?',(city, ))
-			self.connection.commit()
-			old_db.closeDatabase()
-			new_db = Database("Database.sqlite")
-		except Exception as err:
-			print("Clear Database Error: "+str(err))
+			#Formatting the parsed data
+			for n in range(0,5):
+				parsed_str = ''.join(map(str,raw_data[x:y]))
+				if len(parsed_str) == 0:
+					pass
+				else:
+					forecast.append(parsed_str)
+				x+=7
+				y+=7
 
-	#Return all the email addresses of employees who are not apart of the IT staff
-	def getEmployeeEmailAddresses(self, City):
-		try:
-			emails = []
-			self.cursor.execute('SELECT Email FROM Employee WHERE Role IS NOT ? AND City = ?',("IT", City, ))
-			data = self.cursor.fetchall()
-			for email in data:
-				emails.append(email[0])
-			return emails
-		except Exception as err:
-			print("Get Employee Emails Error: "+str(err))
+			if len(forecast)<5:
+				self.update(1)
 
-	#Return all the email address of employees who are apart of the IT Staff
-	def getITEmailAddresses(self, City):
-		try:
-			emails = []
-			self.cursor.execute('SELECT Email FROM Employee WHERE Role IS ? AND City = ?',("IT", City, ))
-			data = self.cursor.fetchall()
-			for email in data:
-				emails.append(email[0])
-			return emails
-		except Exception as err:
-			print("Get IT Staff Email Error: "+str(err))
+			return forecast
+		except Exception as err: 
+			print("Get Data Error: "+str(err))
 
-	#Close the database connection
-	def closeDatabase(self):
+	#Display forcast for a particular city 	
+	def displayForcast(self):
 		try:
-			self.cursor.close()
-			self.connection.close()
+			#Get the city forcast from the database
+			forcast = self.db.getForcast(self.city)
+			#Create a table display instant of the Texttable class
+			text_table = Texttable()
+			for day in forcast:
+				#Convert the windspeed from knots to Text
+				wind = WeatherForcast.windSpeedToText(day[4].split('m/s')[0])
+				#Convert the rain rate from meters per second to text
+				rain = WeatherForcast.rainRateToText(day[2])
+			#Display data from database in a tabular format
+				text_table.add_rows([['DayTime', 'Temperature', 'Rainfall', 'Pressure', 'Wind Speed', 'Wind Direction'], [day[0], day[1],  str(rain), day[3], str(wind), day[5]]])
+			print("=========================== Forcast For " + self.city + " ===========================")
+			print(text_table.draw()+'\n')
 		except Exception as err:
-			print("Database Closed Unsuccessful "+str(err))
+			print("Display Forcast Error: "+ str(err))
+
+	#Checks if it will rain today in a particular city
+	def willHaveRainToday(self):
+		try:
+			#Get the rain rate values from the database
+			rainval = self.db.getTodayRainValue(self.city)
+			#Check if the value recieved is greater than 0.0
+			if float(rainval) > 0.0:
+				#If the rain rate value is greater than 0.0 
+				#It means it will rain today so return ture
+				return True
+			else:
+				#Else it will not rain so return false
+				return False
+		except Exception as err:
+			print("Will have rain today Error: "+str(err))
+
+	#Checks if it will rain tomorrow in a particular city
+	def willHaveRainTomorrow(self):
+		try:
+			rainval = self.db.getTomorrowRainValue(self.city)
+			if float(rainval) > 0.0:
+				return True
+			else:
+				return False
+		except Exception as err:
+			print("Will have rain tomorrow Error: "+str(err))
+			
+
+	#Send email to employees of a particular city
+	def sendEmail(self, emailtitle, willrain=None, role=None):
+		try:
+			"""
+			If a role variable is not passed to the function,
+			get all employee email addresses from the database
+			whose role is not 'IT'
+			"""
+			if role == None:
+				emails = self.db.getEmployeeEmailAddresses(self.city)
+			else:
+				"""
+				If the role variable is passed to the function (sendEmail),
+				get all employee email addresses from the database 
+				whose role is 'IT'
+				"""
+				emails = self.db.getITEmailAddresses(self.city)
+	
+			if emails == []:
+				#If no email addresses were return from the database
+				print("No Emails Found!")
+			else:
+				#If it will not rain, open the 'NoRainEmail.txt' file
+				if willrain == None:
+					with open("NoRainEmail.txt",'r') as message:
+						#Read the contents of the file into the variable 'contents'
+						contents = message.read()
+					message.close()
+				#If it will rain and a role variable is passed to the function 
+				#(sendEmail), open 'ITStaffEmail.txt' file
+				elif willrain != None and role != None:
+					with open("ITStaffEmail.txt",'r') as message:
+						contents = message.read()
+					message.close()
+				else:
+					#If it will rain, open the 'RainEmail.txt' file
+					with open("RainEmail.txt",'r') as message:
+						contents = message.read()
+					message.close()
+
+				print("\n\nSending Email...")
+				#Sender email address
+				gmail_user = 'lomarlilly0712@gmail.com' 
+				#Sender password address
+				gmail_pwd = 'p@$$w0rd'
+				#Send the email via our own SMTP server.
+				smtpserver = smtplib.SMTP("smtp.gmail.com",587)
+				#Test server connection
+				smtpserver.ehlo()
+				smtpserver.starttls()
+				smtpserver.ehlo
+				#Log into the server
+				smtpserver.login(gmail_user, gmail_pwd)
+				for email in emails:
+					#For each in email in the emails list
+					header = 'To:' + email + '\n' + 'From: '+ gmail_user + '\n' + 'Subject: '+emailtitle +'\n'
+					print("Sending Email to "+email)
+					msg = header + '\n' + contents
+					#Send email 'Sender Email, Reciever Email, Contents of Email'
+					smtpserver.sendmail(gmail_user, email, msg)
+				print("Emails Sent!")
+				#Close the server connection
+				smtpserver.close()
+		except Exception as err:
+			print("Sending Email Error: "+str(err))
+
+	#Convert wind speed from knots and to text value
+	@staticmethod
+	def windSpeedToText(kts):
+		try:
+			knots = str(kts).split('kts')[0]
+			knots = int(knots)
+			if knots >= 1 and knots <= 3:
+				return "Light Air"
+			elif knots >= 4 and knots <= 6:
+				return "Light Breeze"
+			elif knots >= 7 and knots <= 10:
+				return "Gentle Breeze"
+			elif knots >= 11 and knots <= 16:
+				return "Moderate Breeze"
+			elif knots >= 17 and knots <= 21:
+				return "Fresh Breeze"
+			elif knots >= 22 and knots <= 27:
+				return "Strong Breeze"
+			elif knots >= 28 and knots <= 33:
+				return "Near Gale"
+			elif knots >= 34 and knots <= 40:
+				return "Gale"
+			elif knots >= 48 and knots <= 55:
+				return "Storm"
+			elif knots >= 56 and knots <= 63:
+				return "Violent Storm"
+			elif knots >= 56 and knots <= 63:
+				return "Hurricane"
+		except Exception as err:
+			print("Wind Speed to text Error: "+str(err))
+
+	#Convert rain rates from metre per second to text value
+	@staticmethod
+	def rainRateToText(rainRate):
+		try:
+			rainRate = float(rainRate)
+			if rainRate == 0.0:
+				return "No Rain"
+			elif rainRate > 0.0 and rainRate <= 0.2:
+				return "Very Light Rain"
+			elif rainRate > 0.2 and rainRate <= 1:
+				return "Light Rain"
+			elif rainRate > 1 and rainRate <= 4:
+				return "Moderate Rain"
+			elif rainRate > 4 and rainRate <= 16:
+				return "Heavy Rain"
+			elif rainRate > 16 and rainRate <= 50:
+				return "Very Heavy Rain"
+			elif rainRate > 50:
+				return "Extreme Rain"
+		except Exception as err:
+			print("Rain rate to text: "+str(err))
