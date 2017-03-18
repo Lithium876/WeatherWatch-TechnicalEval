@@ -1,5 +1,5 @@
 from Database import *
-import smtplib, os, re
+import smtplib, os
 from texttable import Texttable
 from selenium import webdriver
 
@@ -150,7 +150,6 @@ class WeatherForcast:
 		except Exception as err:
 			print("Will have rain tomorrow Error: "+str(err))
 			
-
 	#Send email to employees of a particular city
 	def sendEmail(self, emailtitle, willrain=None, role=None):
 		try:
