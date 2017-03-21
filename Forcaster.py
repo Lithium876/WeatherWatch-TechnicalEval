@@ -192,9 +192,9 @@ class WeatherForcast:
 
 				print("\n\nSending Email...")
 				#Sender email address
-				gmail_user = 'lomarlilly0712@gmail.com' 
+				gmail_user = '' 
 				#Sender password address
-				gmail_pwd = 'p@$$w0rd'
+				gmail_pwd = ''
 				#Send the email via our own SMTP server.
 				smtpserver = smtplib.SMTP("smtp.gmail.com",587)
 				#Test server connection
