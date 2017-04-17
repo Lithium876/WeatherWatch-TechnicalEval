@@ -1,8 +1,9 @@
 from Database import *
-import smtplib, os
+import smtplib, os, sys
 from texttable import Texttable
 from selenium import webdriver
 
+BASE_URL = "http://jamaica.weatherproof.fi/glenroy/weather/jaweather.php?place="
 
 class WeatherForcast:
 
@@ -27,16 +28,12 @@ class WeatherForcast:
 	#Gets Weather Forcast For a City
 	def getForcast(self):
 		try:
-			#If City is Kingston
-			if self.city == "Kingston":
-				#Where to go to get forcast
-				link = "http://jamaica.weatherproof.fi/glenroy/weather/jaweather.php?place=Kingston"
-			#If City is Montego Bay
-			elif self.city == "Montego Bay":
-				link = "http://jamaica.weatherproof.fi/glenroy/weather/jaweather.php?place=Montego+Bay"
+			if self.city in open('supported areas.txt').read():
+				location= self.city.title().replace(" ","+")
+				link = BASE_URL+location
 			else:
-				#If City is not Kingston or Montego Bay raies an exception error
-				raise Exception("Invalid City!")
+				#If City is not supported raies an exception error
+				raise Exception(self.city+" is an invalid or unsupported city!")
 
 			#If the database has data
 			if(self.db.dataExist(self.city) > 0):
@@ -62,6 +59,7 @@ class WeatherForcast:
 		except Exception as err:
 			#Print out err if any
 			print("Get Forcast Error: "+str(err))
+			sys.exit()
 
 	@classmethod
 	def getdata(self, link):
