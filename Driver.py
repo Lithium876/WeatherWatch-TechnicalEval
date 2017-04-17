@@ -1,36 +1,28 @@
 from Forcaster import *
 
+'''
+SUPPORTED LOCATIONS
+Kingston, Spanish Town, Portmore, Morant Bay, Port Antonio, Port Maria, Ocho Rios, Falmouth, 
+Montego Bay, Negril, Savanna-la-mar, Santa Cruz, Mandeville, May Pen
+'''
+
 def main():
 
-	#Kingston
-	kingston = WeatherForcast("Kingston")
+	location = WeatherForcast("Kingston")
 
-	#Get and display the forcast for kingston
-	kingston.getForcast()
-	kingston.displayForcast()
+	#Get and display the forcast for location above
+	location.getForcast()
+	location.displayForcast()
 
-	if kingston.willHaveRainTomorrow():
+	if location.willHaveRainTomorrow():
 		Email_Subject = "Schedule Change"
 		#Sent to all employees not from IT staff
-		kingston.sendEmail(Email_Subject, True)
+		location.sendEmail(Email_Subject, True)
 		# #Sent to all employees from IT staff
-		kingston.sendEmail(Email_Subject, True, "IT Staff")
+		location.sendEmail(Email_Subject, True, "IT Staff")
 	else:
 		Email_Subject = "Schedule Remains"
-		kingston.sendEmail(Email_Subject)
-
-
-	#Execution for Montegobay
-	mobay = WeatherForcast("Montego Bay")
-	mobay.getForcast()
-	mobay.displayForcast()
-
-	if mobay.willHaveRainTomorrow():
-		Email_Subject = "Schedule Change"
-		mobay.sendEmail(Email_Subject, True, "IT Guy")
-	else:
-		Email_Subject = "Schedule Remains"
-		mobay.sendEmail(Email_Subject)
+		location.sendEmail(Email_Subject)
 
 if __name__ == '__main__':
 	main()
