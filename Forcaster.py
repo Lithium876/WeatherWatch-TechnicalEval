@@ -1,7 +1,6 @@
 from Database import *
 import smtplib, os, sys
 from texttable import Texttable
-from selenium import webdriver
 
 BASE_URL = "http://jamaica.weatherproof.fi/glenroy/weather/jaweather.php?place="
 
@@ -29,7 +28,7 @@ class WeatherForcast:
 	def getForcast(self):
 		try:
 			if self.city in open('supported areas.txt').read():
-				location= self.city.title().replace(" ","+")
+				location = self.city.title().replace(" ","+")
 				link = BASE_URL+location
 			else:
 				#If City is not supported raies an exception error
