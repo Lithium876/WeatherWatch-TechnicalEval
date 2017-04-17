@@ -1,6 +1,6 @@
 # TechnicalEval
 
-Krace Gennedy has an employee workforce of 500 (200 in Mobay, 300 in Kingston) manufacturing workers. The boss man has realized that when it rains productivity is generally low for the following reasons:
+Grace Gennedy has an employee workforce of 500 (200 in Mobay, 300 in Kingston) manufacturing workers. The boss man has realized that when it rains productivity is generally low for the following reasons:
 
 *	People don't show up for work
 
