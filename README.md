@@ -1,4 +1,8 @@
-# TechnicalEval
+# Technical Evaluation
+
+This program was given to me by a company to test my technical skills. It's now completed so I just deciede to make it open source in case someone wants to build on it.
+
+# The Problem
 
 Grace Gennedy has an employee workforce of 500 (200 in Mobay, 300 in Kingston) manufacturing workers. The boss man has realized that when it rains productivity is generally low for the following reasons:
 
