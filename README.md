@@ -23,7 +23,7 @@ The boss has asked you to build an application that will check the weather forec
 
 # UPDATE
 
-This program now support more than just Kingston and Montego Bay. 
+This program now supports more than just Kingston and Montego Bay. 
 
 See newly supported locations below:
 * Kingston
