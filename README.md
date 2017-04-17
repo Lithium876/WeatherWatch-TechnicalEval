@@ -36,7 +36,7 @@ The boss has asked you to build an application that will check the weather forec
 $ pip install beautifulsoup4
 $ pip install texttable
 ```
-[Watch this video](https://www.youtube.com/watch?v=yKDzj70fNeg) to see how to get SQLite Manager. ** You'll only need this if you intend on viewing or making changes to the database.
+[Watch this video](https://www.youtube.com/watch?v=yKDzj70fNeg) to see how to get SQLite Manager. ** You'll only need this if you intend on viewing or making changes to the database.**
 
 # Execution 
 
