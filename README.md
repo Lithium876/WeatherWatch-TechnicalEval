@@ -1,6 +1,6 @@
 # Technical Evaluation
 
-This program was given to me by a company to test my technical skills. It's now completed but I still make updates to it for personal development so I deciede to make it open source in case someone wants to collab with me on it. 
+This program was given to me by a company to test my technical skills. It's now completed but I still make updates to it for personal development so I decided to make it open source in case someone wants to collab with me on it. 
 
 # The Problem
 
