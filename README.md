@@ -25,6 +25,36 @@ The boss has the following criteria:
 The boss enjoys DVM weather forecast with Martia-May Levans in the evenings but sometimes he doesn't catch it and is unable to send notifications are required.
 The boss has asked you to build an application that will check the weather forecast for the next 5 days and automate the sending of emails out to staff. You can create a structure and put some forecast data or pull it from an external source such as http://openweathermap.org/A PI. Use your discretion.
 
+# Requirements 
+* Python 3.x
+* BeautifulSoup
+* Texttable
+* SQLite Manager (optional)
+
+# Installation
+```
+$ pip install beautifulsoup4
+$ pip install texttable
+```
+[Watch this video](https://www.youtube.com/watch?v=yKDzj70fNeg) to see how to get SQLite Manager. ** You'll only need this if you intend on viewing or making changes to the database.
+
+# Execution 
+
+1. Clone this repo
+```
+$ git clone https://github.com/Lithium95/WeatherWatch-TechnicalEval
+```
+
+2. Insert location you wish to get the forecast of. (See supported areas.txt)
+```
+location = WeatherForcast("XXXXXXXXXXXX")
+```
+
+3. Run Driver.py
+```
+$ python Driver.py
+```
+
 # UPDATES
 
 This program now supports more than just Kingston and Montego Bay. 
@@ -43,9 +73,3 @@ See newly supported locations below:
 * Santa Cruz
 * Mandeville
 * May Pen
-
-# Reqiurements 
-* Python 3.x
-* BeautifulSoup
-* Texttable
-* SQLite Manager
