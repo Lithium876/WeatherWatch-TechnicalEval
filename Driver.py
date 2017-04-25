@@ -69,6 +69,7 @@ class Ui_MainWindow(object):
         font.setPointSize(13)
         self.displayCheckBox.setFont(font)
         self.displayCheckBox.setObjectName(_fromUtf8("displayCheckBox"))
+        self.displayCheckBox.setChecked(True)
         
         self.emailCheckBox = QtGui.QCheckBox(self.centralwidget)
         self.emailCheckBox.setGeometry(QtCore.QRect(350, 50, 121, 17))
