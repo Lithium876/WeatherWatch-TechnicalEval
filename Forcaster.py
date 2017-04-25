@@ -103,6 +103,7 @@ class WeatherForcast:
 
 	#Display forcast for a particular city 	
 	def displayForcast(self):
+		data = []
 		try:
 			#Get the city forcast from the database
 			forcast = self.db.getForcast(self.city)
@@ -114,9 +115,14 @@ class WeatherForcast:
 				#Convert the rain rate from meters per second to text
 				rain = WeatherForcast.rainRateToText(day[2])
 			#Display data from database in a tabular format
-				text_table.add_rows([['DayTime', 'Temperature', 'Rainfall', 'Pressure', 'Wind Speed', 'Wind Direction'], [day[0], day[1],  str(rain), day[3], str(wind), day[5]]])
-			print("=========================== Forcast For " + self.city + " ===========================")
-			print(text_table.draw()+'\n')
+				# text_table.add_rows([['DayTime', 'Temperature', 'Rainfall', 'Pressure', 'Wind Speed', 'Wind Direction'], [day[0], day[1],  str(rain), day[3], str(wind), day[5]]])
+				data.append(day[0])
+				data.append(day[1])  
+				data.append(str(rain))
+				data.append(day[3])
+				data.append(str(wind))
+				data.append(day[5])
+			return data
 		except Exception as err:
 			print("Display Forcast Error: "+ str(err))
 
