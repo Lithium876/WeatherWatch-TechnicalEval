@@ -56,6 +56,8 @@ $ python Driver.py
 ```
 
 # UPDATES
+There is now a GUI for this application:
+[](img/preview.png)
 
 This program now supports more than just Kingston and Montego Bay. 
 See newly supported locations below:
