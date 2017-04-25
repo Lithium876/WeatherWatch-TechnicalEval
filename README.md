@@ -56,7 +56,7 @@ $ python Driver.py
 ```
 
 # UPDATES
-There is now a GUI for this application:
+There is now a basic GUI for this application:
 ![alt](img/preview.png)
 
 This program now supports more than just Kingston and Montego Bay. 
