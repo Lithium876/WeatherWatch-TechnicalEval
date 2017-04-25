@@ -61,17 +61,7 @@ There is now a basic GUI for this application:
 
 This program now supports more than just Kingston and Montego Bay. 
 See newly supported locations below:
-* Kingston
-* Spanish Town
-* Portmore
-* Morant Bay
-* Port Antonio
-* Port Maria
-* Ocho Rios
-* Falmouth
-* Montego Bay
-* Negril
-* Savanna-la-mar
-* Santa Cruz
-* Mandeville
-* May Pen
+* Kingston, Spanish Town, Portmore, Morant Bay
+* Port Antonio, Port Maria, Ocho Rios, Falmouth
+* Montego Bay, Negril, Savanna-la-mar, Santa Cruz
+* Mandeville, May Pen
