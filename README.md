@@ -28,7 +28,6 @@ The boss has asked you to build an application that will check the weather forec
 # Requirements 
 * Python 3.x
 * BeautifulSoup
-* Texttable
 * PyQt4
 * SQLite Manager (optional)
 
