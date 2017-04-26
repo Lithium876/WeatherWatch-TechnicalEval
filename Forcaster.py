@@ -123,6 +123,8 @@ class WeatherForcast:
 				data.append(str(wind))
 				data.append(day[5])
 			return data
+			# print("=========================== Forcast For " + self.city + " ===========================")
+			# print(text_table.draw()+'\n')
 		except Exception as err:
 			print("Display Forcast Error: "+ str(err))
 
@@ -173,7 +175,7 @@ class WeatherForcast:
 	
 			if emails == []:
 				#If no email addresses were return from the database
-				print("No Emails Found!")
+				return "No Emails Found!"
 			else:
 				#If it will not rain, open the 'NoRainEmail.txt' file
 				if willrain == None:
@@ -193,11 +195,10 @@ class WeatherForcast:
 						contents = message.read()
 					message.close()
 
-				print("\n\nSending Email...")
 				#Sender email address
-				gmail_user = '' 
+				gmail_user = 'lomarlilly0712@gmail.com' 
 				#Sender password address
-				gmail_pwd = ''
+				gmail_pwd = 'p@$$w0rd'
 				#Send the email via our own SMTP server.
 				smtpserver = smtplib.SMTP("smtp.gmail.com",587)
 				#Test server connection
@@ -207,17 +208,18 @@ class WeatherForcast:
 				#Log into the server
 				smtpserver.login(gmail_user, gmail_pwd)
 				for email in emails:
+					sent = []
 					#For each in email in the emails list
 					header = 'To:' + email + '\n' + 'From: '+ gmail_user + '\n' + 'Subject: '+emailtitle +'\n'
-					print("Sending Email to "+email)
+					sent.append(email)
 					msg = header + '\n' + contents
 					#Send email 'Sender Email, Reciever Email, Contents of Email'
 					smtpserver.sendmail(gmail_user, email, msg)
-				print("Emails Sent!")
+				return "Emails Sent Successfully"
 				#Close the server connection
 				smtpserver.close()
 		except Exception as err:
-			print("Sending Email Error: "+str(err))
+			return "Error: "+str(err)
 
 	#Convert wind speed from knots and to text value
 	@staticmethod
