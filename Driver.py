@@ -21,7 +21,7 @@ except AttributeError:
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName(_fromUtf8("MainWindow"))
-        MainWindow.setFixedSize(644, 340)
+        MainWindow.setFixedSize(644, 434)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("icon.png")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
@@ -29,7 +29,7 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(_fromUtf8("centralwidget"))
         
         self.locationComboBox = QtGui.QComboBox(self.centralwidget)
-        self.locationComboBox.setGeometry(QtCore.QRect(150, 20, 161, 31))
+        self.locationComboBox.setGeometry(QtCore.QRect(450, 10, 181, 31))
         font = QtGui.QFont()
         font.setPointSize(13)
         self.locationComboBox.setFont(font)
@@ -51,20 +51,20 @@ class Ui_MainWindow(object):
         self.locationComboBox.addItem("May Pen")
 
         self.locationLabel = QtGui.QLabel(self.centralwidget)
-        self.locationLabel.setGeometry(QtCore.QRect(70, 20, 71, 31))
+        self.locationLabel.setGeometry(QtCore.QRect(380, 10, 71, 31))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.locationLabel.setFont(font)
         self.locationLabel.setObjectName(_fromUtf8("locationLabel"))
         
         self.line = QtGui.QFrame(self.centralwidget)
-        self.line.setGeometry(QtCore.QRect(10, 110, 621, 16))
+        self.line.setGeometry(QtCore.QRect(10, 200, 621, 16))
         self.line.setFrameShape(QtGui.QFrame.HLine)
         self.line.setFrameShadow(QtGui.QFrame.Sunken)
         self.line.setObjectName(_fromUtf8("line"))
         
         self.displayCheckBox = QtGui.QCheckBox(self.centralwidget)
-        self.displayCheckBox.setGeometry(QtCore.QRect(350, 20, 141, 17))
+        self.displayCheckBox.setGeometry(QtCore.QRect(380, 60, 141, 17))
         font = QtGui.QFont()
         font.setPointSize(13)
         self.displayCheckBox.setFont(font)
@@ -72,14 +72,14 @@ class Ui_MainWindow(object):
         self.displayCheckBox.setChecked(True)
         
         self.emailCheckBox = QtGui.QCheckBox(self.centralwidget)
-        self.emailCheckBox.setGeometry(QtCore.QRect(350, 50, 121, 17))
+        self.emailCheckBox.setGeometry(QtCore.QRect(380, 90, 121, 17))
         font = QtGui.QFont()
         font.setPointSize(13)
         self.emailCheckBox.setFont(font)
         self.emailCheckBox.setObjectName(_fromUtf8("emailCheckBox"))
         
         self.button = QtGui.QPushButton(self.centralwidget)
-        self.button.setGeometry(QtCore.QRect(70, 70, 241, 31))
+        self.button.setGeometry(QtCore.QRect(380, 160, 241, 31))
         font = QtGui.QFont()
         font.setPointSize(12)
         self.button.setFont(font)
@@ -88,7 +88,7 @@ class Ui_MainWindow(object):
         
         self.emailComboBox = QtGui.QComboBox(self.centralwidget)
         self.emailComboBox.setEnabled(False)
-        self.emailComboBox.setGeometry(QtCore.QRect(350, 80, 231, 31))
+        self.emailComboBox.setGeometry(QtCore.QRect(380, 120, 231, 31))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.emailComboBox.setFont(font)
@@ -97,12 +97,10 @@ class Ui_MainWindow(object):
         self.emailComboBox.addItem("Will Rain - IT Staff only")
         self.emailComboBox.addItem("Will Rain - General Staff only")
         self.emailComboBox.addItem("Will Rain - IT Staff and General Staff")
-        self.emailComboBox.addItem("Will Not Rain - IT Staff only")
-        self.emailComboBox.addItem("Will Not Rain - General Staff only")
-        self.emailComboBox.addItem("Will Not Rain - IT Staff and General Staff")
+        self.emailComboBox.addItem("Will Not Rain - General Staff")
 
         self.tableWidget = QtGui.QTableWidget(self.centralwidget)
-        self.tableWidget.setGeometry(QtCore.QRect(10, 130, 621, 181))
+        self.tableWidget.setGeometry(QtCore.QRect(10, 220, 621, 181))
         font = QtGui.QFont()
         font.setPointSize(9)
         self.tableWidget.setFont(font)
@@ -126,6 +124,12 @@ class Ui_MainWindow(object):
         
         MainWindow.setCentralWidget(self.centralwidget)
         
+        self.calendarWidget = QtGui.QCalendarWidget(self.centralwidget)
+        self.calendarWidget.setGeometry(QtCore.QRect(0, 0, 371, 191))
+        self.calendarWidget.setObjectName(_fromUtf8("calendarWidget"))
+
+        MainWindow.setCentralWidget(self.centralwidget)
+
         self.menuBar = QtGui.QMenuBar(MainWindow)
         self.menuBar.setGeometry(QtCore.QRect(0, 0, 644, 21))
         self.menuBar.setObjectName(_fromUtf8("menuBar"))
@@ -196,6 +200,23 @@ class Ui_MainWindow(object):
         else:
             self.emailComboBox.setEnabled(False)
 
+    @staticmethod
+    def showMessage(statusMsg):
+        msg = QMessageBox()
+        msg.setIcon(QMessageBox.Information)
+
+        msg.setText(statusMsg)
+        if "No" in statusMsg:
+            msg.setIcon(QMessageBox.Critical)
+            msg.setWindowTitle("Error")
+        elif "Error" in statusMsg:
+            msg.setIcon(QMessageBox.Critical)
+            msg.setWindowTitle("Sending Email Error")
+        else:
+            msg.setWindowTitle("Email Sent!")
+        msg.setStandardButtons(QMessageBox.Ok)
+        retval = msg.exec_()
+
     def getForecast(self):
         if self.displayCheckBox.isChecked():
             location = WeatherForcast(str(self.locationComboBox.currentText()))
@@ -203,6 +224,22 @@ class Ui_MainWindow(object):
             data = location.displayForcast()
             for x in range(0,len(data)):
                 self.tableWidget.setItem(0, x, QTableWidgetItem(data[x]))
+
+        if self.emailCheckBox.isChecked():
+            recievers = str(self.emailComboBox.currentText())
+            if location.willHaveRainTomorrow():
+                Email_Subject = "Schedule Change"
+                if "IT Staff only" in recievers:
+                    msg = location.sendEmail(Email_Subject, True, "IT Staff")
+                elif "General Staff only" in recievers:
+                    msg = location.sendEmail(Email_Subject, True)
+                elif "IT Staff and General Staff" in recievers:
+                    msg = location.sendEmail(Email_Subject, True, "IT Staff")
+                    msg = location.sendEmail(Email_Subject, True)
+            else:
+                Email_Subject = "Schedule Remains"
+                msg = location.sendEmail(Email_Subject)
+            self.showMessage(msg)
 
     @staticmethod
     def Not_Rain_General_Staff():
