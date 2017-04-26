@@ -46,12 +46,7 @@ $ pip install texttable
 $ git clone https://github.com/Lithium95/WeatherWatch-TechnicalEval
 ```
 
-2. Insert location you wish to get the forecast of. (See supported areas.txt)
-```
-location = WeatherForcast("XXXXXXXXXXXX")
-```
-
-3. Run Driver.py
+2. Run Driver.py
 ```
 $ python Driver.py
 ```
