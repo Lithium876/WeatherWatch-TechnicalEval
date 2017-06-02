@@ -49,8 +49,8 @@ class WeatherForcast:
 				Temp = days[3].split("\xa0")[0]+"°C"
 				Rainfall = days[3].split("C")[1]
 				Pressure = days[4].split("mm")[1]+"mb"
-				WindSpeed = days[6]+"m/s"
-				WindDirection = days[7].split("m/s")[1]
+				WindSpeed = days[6]+"kts"
+				WindDirection = days[7].split("kts")[1]
 				#Add the parsed data to the database
 				self.db.dataEntry(DayTime, Temp, Rainfall, Pressure, WindSpeed, WindDirection, self.city, self.DayCount)
 				#Updates the class variable
